@@ -174,3 +174,11 @@ homebrew_casks:
     binaries:
       - kubara
     skip_upload: "auto"
+dockers_v2:
+  - dockerfile: ../Dockerfile
+    images:
+      - "ghcr.io/kubara-io/kubara"
+    tags:
+      - "{{ .Version }}"
+      - "latest"
+    sbom: false

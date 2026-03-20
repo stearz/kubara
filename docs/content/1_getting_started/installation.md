@@ -7,25 +7,50 @@ You do not need Go installed to run the CLI.
 
 === "Homebrew"
 
+    **Install**
+
     ```bash
     brew tap kubara-io/tap
     brew install kubara
     kubara --help
     ```
 
-    Update:
+    **Update**
 
     ```bash
     brew upgrade kubara
     ```
 
-    Uninstall:
+    **Uninstall**
 
     ```bash
     brew uninstall kubara
     ```
 
-=== "Install Script (macOS / Linux)"
+=== "Docker"
+
+    For commands that need cluster access (e.g. `bootstrap`), mount your kubeconfig:
+
+    ```bash
+    docker run --rm \
+      -u $(id -u):$(id -g) \
+      -v ~/.kube/config:/kubeconfig:ro \
+      -v $(pwd):/workspace \
+      -w /workspace \
+      ghcr.io/kubara-io/kubara <your-command>
+    ```
+
+    For local-only commands (e.g. `init`, `generate`, `schema`), kubeconfig is not required:
+
+    ```bash
+    docker run --rm \
+      -u $(id -u):$(id -g) \
+      -v $(pwd):/workspace \
+      -w /workspace \
+      ghcr.io/kubara-io/kubara <your-command>
+    ```
+
+=== "Install Script"
 
     ```bash
     curl -sSLf https://raw.githubusercontent.com/kubara-io/kubara/refs/heads/main/install.sh | sh
@@ -34,7 +59,7 @@ You do not need Go installed to run the CLI.
 
     The script downloads the latest release for your platform and verifies checksums automatically.
 
-=== "Manual Download (macOS / Linux)"
+=== "Manual (macOS/Linux)"
 
     Download the matching release archive from:
 
@@ -51,7 +76,7 @@ You do not need Go installed to run the CLI.
     kubara --help
     ```
 
-=== "Manual Download (Windows)"
+=== "Manual (Windows)"
 
     Download the matching Windows `.zip` release asset from:
 
