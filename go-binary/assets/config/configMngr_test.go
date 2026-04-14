@@ -24,6 +24,7 @@ func newValidTestConfig() *Config {
 				Type:             "controlplane",
 				DNSName:          "test-cluster.example.com",
 				Terraform: &Terraform{
+					Provider:          "stackit",
 					ProjectID:         "00000000-0000-0000-0000-000000000000",
 					KubernetesType:    "ske",
 					KubernetesVersion: "1.34",
@@ -484,4 +485,54 @@ func TestGenerateSchema(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLoadAndValidate_MinimalConfigWithDefaults(t *testing.T) {
+	// A minimal YAML that only provides required fields and omits all fields
+	// that have defaults. After Load() applies defaults, Validate() must pass.
+	minimalYAML := `
+clusters:
+  - name: minimal-cluster
+    dnsName: minimal.example.com
+    argocd:
+      repo:
+        https:
+          customer:
+            url: "https://github.com/customer/repo.git"
+          managed:
+            url: "https://github.com/managed/repo.git"
+    services:
+      argocd: {}
+      certManager:
+        clusterIssuer:
+          email: cert@example.com
+      externalDns: {}
+      externalSecrets: {}
+      kubePrometheusStack: {}
+      traefik: {}
+      kyverno: {}
+      kyvernoPolicies: {}
+      kyvernoPolicyReport: {}
+      loki: {}
+      homerDashboard: {}
+      oauth2Proxy: {}
+      metricsServer: {}
+      metalLb: {}
+      longhorn: {}
+`
+
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.yaml")
+	require.NoError(t, os.WriteFile(configPath, []byte(minimalYAML), 0644))
+
+	cm := NewConfigManager(configPath)
+
+	require.NoError(t, cm.Load(), "Load should succeed")
+
+	c := cm.GetConfig().Clusters[0]
+	assert.Equal(t, "dev", c.Stage, "Stage should be defaulted")
+	assert.Equal(t, "controlplane", c.Type, "Type should be defaulted")
+	assert.Equal(t, "traefik", c.IngressClassName, "IngressClassName should be defaulted")
+
+	assert.NoError(t, cm.Validate(), "Validate should pass after defaults are applied")
 }
